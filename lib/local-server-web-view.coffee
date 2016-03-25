@@ -1,7 +1,6 @@
 {exec} = require('child_process')
 Shell = require('shell')
-path = require "path"
-serverPath = ""
+
 
 module.exports =
   activate: (state) ->
@@ -11,25 +10,23 @@ module.exports =
     # Get Absolute File Path
     editor = atom.workspace.getActivePaneItem()
     file = editor?.buffer.file
-    goalPath = file?.path
-    # Get Relative File Path
-    relativePath = atom.project.relativize(goalPath)
-    # Get Associated Project URL
-    projectURL = goalPath.replace(relativePath, "")
-    # Personal Server URL Configuration (***EDIT YOUR CONFIGURATION HERE***)
-    # serverPath is path prepended to file URL
-    switch projectURL
-        when "C:\\xampp\\htdocs\\franzenit\\" then (serverPath = "franzenit.localhost:8081/")
-        when "C:\\xampp\\htdocs\\ThePitCrewAutomotive\\" then (serverPath = "thepitcrew.localhost:8081/")
-        when "C:\\xampp\\htdocs\\SabuWorks\\" then (serverPath = "sabuworks.localhost:8081/")
-        when "C:\\xampp\\htdocs\\QuizAnswers\\" then (serverPath = "quizanswers.localhost:8081/")
-        when "C:\\xampp\\htdocs\\amandaConley\\" then (serverPath = "amandaconley.localhost:8081/")
-        else (serverPath = "localhost:8081/")
-        # EXAMPLE: when "{project_folder_path}" then (serverPath = "{prepend_url}")
+    projectURL = file?.path
+
+    #规则列表
+    pathToUrl = {
+      'E:\\Workspace\\www\\test':'http://test.com',
+      'E:\\Workspace\\www':'http://localhost',
+    }
+
+    serverPath = projectURL
+    for path,server of pathToUrl
+      if projectURL.indexOf(path) isnt -1
+        serverPath = server + projectURL.replace(path,'').replace(/\\/g,'/')
+        break
 
     # Send Data to Print Function
-    @sendToBrowser relativePath
+    @sendToBrowser serverPath
 
-  sendToBrowser: (relativePath) ->
-      Shell.openExternal("http://"+serverPath+relativePath)
+  sendToBrowser: (serverPath) ->
+      Shell.openExternal(serverPath)
       # This creates the URL for the web browser.  EXAMPLE: "http://franzenit.localhost:8081/about.php"
